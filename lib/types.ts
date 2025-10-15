@@ -2,6 +2,8 @@ export interface AppState {
   currentScreen: 'onboarding' | 'dashboard' | 'checkin-confirmation' | 'action-plan' | 'ai-chat';
   activeTab: 'home' | 'learn' | 'support' | 'me';
   birthDate: string | null;
+  isPremature: boolean;
+  gestationWeeks: number | null;
   selectedRating: number | null;
   selectedPainAnswer: 'yes' | 'no' | null;
   checkinHistory: CheckinData[];
@@ -22,13 +24,19 @@ export interface DashboardCardProps {
 }
 
 export interface OnboardingProps {
-  onSubmit: (birthDate: string) => void;
+  onSubmit: (data: {
+    birthDate: string;
+    isPremature: boolean;
+    gestationWeeks?: number;
+  }) => void;
 }
 
 export interface DashboardProps {
   weekPostpartum: number;
   onStartCheckin: () => void;
   checkinHistory: CheckinData[];
+  isPremature?: boolean;
+  gestationWeeks?: number;
 }
 
 export interface CheckinConfirmationProps {

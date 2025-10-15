@@ -7,6 +7,7 @@ import CheckinModal from '@/components/checkin-modal'
 import CheckinConfirmation from '@/components/checkin-confirmation'
 import ActionPlan from '@/components/action-plan'
 import AIChat from '@/components/ai-chat'
+import NICUDashboard from '@/components/nicu-dashboard'
 import AppLayout from '@/components/app-layout'
 import { AppState, CheckinData } from '@/lib/types'
 
@@ -15,6 +16,8 @@ export default function HomePage() {
     currentScreen: 'onboarding',
     activeTab: 'home',
     birthDate: null,
+    isPremature: false,
+    gestationWeeks: null,
     selectedRating: null,
     selectedPainAnswer: null,
     checkinHistory: []
@@ -32,11 +35,17 @@ export default function HomePage() {
     return Math.max(weeks, 1) // Ensure minimum of week 1
   }
 
-  const handleOnboardingSubmit = (birthDate: string) => {
+  const handleOnboardingSubmit = (data: {
+    birthDate: string;
+    isPremature: boolean;
+    gestationWeeks?: number;
+  }) => {
     setAppState(prev => ({
       ...prev,
       currentScreen: 'dashboard',
-      birthDate
+      birthDate: data.birthDate,
+      isPremature: data.isPremature,
+      gestationWeeks: data.gestationWeeks || null
     }))
   }
 
@@ -123,13 +132,24 @@ export default function HomePage() {
       )}
 
       {appState.currentScreen === 'dashboard' && (
-        <Dashboard 
-          weekPostpartum={weekPostpartum}
-          onStartCheckin={handleStartCheckin}
-          checkinHistory={appState.checkinHistory}
-          activeTab={appState.activeTab}
-          onTabChange={handleTabChange}
-        />
+        appState.isPremature && appState.gestationWeeks ? (
+          <NICUDashboard 
+            weekPostpartum={weekPostpartum}
+            onStartCheckin={handleStartCheckin}
+            checkinHistory={appState.checkinHistory}
+            activeTab={appState.activeTab}
+            onTabChange={handleTabChange}
+            gestationWeeks={appState.gestationWeeks}
+          />
+        ) : (
+          <Dashboard 
+            weekPostpartum={weekPostpartum}
+            onStartCheckin={handleStartCheckin}
+            checkinHistory={appState.checkinHistory}
+            activeTab={appState.activeTab}
+            onTabChange={handleTabChange}
+          />
+        )
       )}
 
       {appState.currentScreen === 'checkin-confirmation' && currentCheckinData && (
@@ -156,6 +176,7 @@ export default function HomePage() {
         isOpen={isCheckinModalOpen}
         onClose={handleCloseCheckin}
         onSubmit={handleCheckinSubmit}
+        isNICU={appState.isPremature}
       />
     </AppLayout>
   )

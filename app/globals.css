@@ -86,6 +86,15 @@
   background-color: #f5f5f5;
 }
 
+/* NICU soft yellow accent */
+.nicu-accent {
+  background-color: #F8F4F0;
+}
+
+.nicu-accent-text {
+  color: #F8F4F0;
+}
+
 /* Scrollbar utilities */
 .scrollbar-hide {
   -ms-overflow-style: none;

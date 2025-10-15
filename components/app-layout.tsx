@@ -26,27 +26,31 @@ export default function AppLayout({
   showBackButton = false
 }: AppLayoutProps) {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
+      {/* Header - Sticky */}
       {showHeader && (
-        <AppHeader 
-          title={headerTitle}
-          showBackButton={showBackButton}
-          onBack={onBack}
-        />
+        <div className="sticky top-0 z-50 bg-background">
+          <AppHeader 
+            title={headerTitle}
+            showBackButton={showBackButton}
+            onBack={onBack}
+          />
+        </div>
       )}
 
-      {/* Main Content Area - Flexible */}
-      <main className="flex-1 flex flex-col overflow-hidden">
+      {/* Main Content Area - Scrollable */}
+      <main className="flex-1 overflow-y-auto">
         {children}
       </main>
 
-      {/* Bottom Navigation - Fixed */}
+      {/* Bottom Navigation - Sticky */}
       {showNavigation && onTabChange && (
-        <BottomNavigation 
-          activeTab={activeTab} 
-          onTabChange={onTabChange} 
-        />
+        <div className="sticky bottom-0 z-50 bg-background">
+          <BottomNavigation 
+            activeTab={activeTab} 
+            onTabChange={onTabChange} 
+          />
+        </div>
       )}
     </div>
   )
