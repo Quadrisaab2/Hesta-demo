@@ -41,14 +41,12 @@ export default function CheckinModal({ isOpen, onClose, onSubmit }: CheckinModal
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    onSubmit(checkinData)
-    
     // Reset form
     setSelectedRating(null)
     setSelectedPainAnswer(null)
     setIsSubmitting(false)
     
-    alert('Thank you for your check-in! Your responses have been recorded.')
+    onSubmit(checkinData)
     onClose()
   }
 
