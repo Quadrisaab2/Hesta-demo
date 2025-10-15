@@ -15,9 +15,10 @@ interface CheckinModalProps {
   isOpen: boolean
   onClose: () => void
   onSubmit: (data: CheckinData) => void
+  isNICU?: boolean
 }
 
-export default function CheckinModal({ isOpen, onClose, onSubmit }: CheckinModalProps) {
+export default function CheckinModal({ isOpen, onClose, onSubmit, isNICU = false }: CheckinModalProps) {
   const [selectedRating, setSelectedRating] = useState<number | null>(null)
   const [selectedPainAnswer, setSelectedPainAnswer] = useState<'yes' | 'no' | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -41,14 +42,12 @@ export default function CheckinModal({ isOpen, onClose, onSubmit }: CheckinModal
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    onSubmit(checkinData)
-    
     // Reset form
     setSelectedRating(null)
     setSelectedPainAnswer(null)
     setIsSubmitting(false)
     
-    alert('Thank you for your check-in! Your responses have been recorded.')
+    onSubmit(checkinData)
     onClose()
   }
 
@@ -67,7 +66,7 @@ export default function CheckinModal({ isOpen, onClose, onSubmit }: CheckinModal
       <DialogContent className="sm:max-w-md w-full max-w-[90vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-libre text-center">
-            Your Daily Check-in
+            {isNICU ? 'Your Daily NICU Check-in' : 'Your Daily Check-in'}
           </DialogTitle>
         </DialogHeader>
 
@@ -75,7 +74,10 @@ export default function CheckinModal({ isOpen, onClose, onSubmit }: CheckinModal
           {/* Emotional Rating Question */}
           <div className="space-y-4">
             <label className="block text-base font-medium text-center text-foreground">
-              On a scale of 1 to 5, how are you feeling emotionally today?
+              {isNICU 
+                ? 'On a scale of 1 to 5, how are you coping emotionally in the hospital today?'
+                : 'On a scale of 1 to 5, how are you feeling emotionally today?'
+              }
             </label>
             <div className="flex gap-2 justify-center">
               {[1, 2, 3, 4, 5].map((rating) => (
@@ -96,7 +98,10 @@ export default function CheckinModal({ isOpen, onClose, onSubmit }: CheckinModal
           {/* Physical Pain Question */}
           <div className="space-y-4">
             <label className="block text-base font-medium text-center text-foreground">
-              Are you experiencing any unexpected physical pain?
+              {isNICU
+                ? 'Are you experiencing any physical discomfort or pain that\'s affecting your hospital stay?'
+                : 'Are you experiencing any unexpected physical pain?'
+              }
             </label>
             <div className="flex gap-4 justify-center">
               <Button

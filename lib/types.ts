@@ -1,8 +1,12 @@
 export interface AppState {
-  currentScreen: 'onboarding' | 'dashboard';
+  currentScreen: 'onboarding' | 'dashboard' | 'checkin-confirmation' | 'action-plan' | 'ai-chat';
+  activeTab: 'home' | 'learn' | 'support' | 'me';
   birthDate: string | null;
+  isPremature: boolean;
+  gestationWeeks: number | null;
   selectedRating: number | null;
   selectedPainAnswer: 'yes' | 'no' | null;
+  checkinHistory: CheckinData[];
 }
 
 export interface CheckinData {
@@ -20,10 +24,44 @@ export interface DashboardCardProps {
 }
 
 export interface OnboardingProps {
-  onSubmit: (birthDate: string) => void;
+  onSubmit: (data: {
+    birthDate: string;
+    isPremature: boolean;
+    gestationWeeks?: number;
+  }) => void;
 }
 
 export interface DashboardProps {
   weekPostpartum: number;
   onStartCheckin: () => void;
+  checkinHistory: CheckinData[];
+  isPremature?: boolean;
+  gestationWeeks?: number;
+}
+
+export interface CheckinConfirmationProps {
+  checkinData: CheckinData;
+  onSeeActionPlan: () => void;
+}
+
+export interface ActionPlanProps {
+  weekPostpartum: number;
+  onStartChat: () => void;
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'ai';
+  message: string;
+  timestamp: string;
+}
+
+export interface NavigationProps {
+  activeTab: 'home' | 'learn' | 'support' | 'me';
+  onTabChange: (tab: 'home' | 'learn' | 'support' | 'me') => void;
+}
+
+export interface WellbeingChartData {
+  date: string;
+  rating: number;
 }

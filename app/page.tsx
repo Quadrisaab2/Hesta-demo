@@ -4,17 +4,27 @@ import { useState } from 'react'
 import Onboarding from '@/components/onboarding'
 import Dashboard from '@/components/dashboard'
 import CheckinModal from '@/components/checkin-modal'
+import CheckinConfirmation from '@/components/checkin-confirmation'
+import ActionPlan from '@/components/action-plan'
+import AIChat from '@/components/ai-chat'
+import NICUDashboard from '@/components/nicu-dashboard'
+import AppLayout from '@/components/app-layout'
 import { AppState, CheckinData } from '@/lib/types'
 
 export default function HomePage() {
   const [appState, setAppState] = useState<AppState>({
     currentScreen: 'onboarding',
+    activeTab: 'home',
     birthDate: null,
+    isPremature: false,
+    gestationWeeks: null,
     selectedRating: null,
-    selectedPainAnswer: null
+    selectedPainAnswer: null,
+    checkinHistory: []
   })
 
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false)
+  const [currentCheckinData, setCurrentCheckinData] = useState<CheckinData | null>(null)
 
   const calculateWeekPostpartum = (birthDate: string): number => {
     const now = new Date()
@@ -25,11 +35,17 @@ export default function HomePage() {
     return Math.max(weeks, 1) // Ensure minimum of week 1
   }
 
-  const handleOnboardingSubmit = (birthDate: string) => {
+  const handleOnboardingSubmit = (data: {
+    birthDate: string;
+    isPremature: boolean;
+    gestationWeeks?: number;
+  }) => {
     setAppState(prev => ({
       ...prev,
       currentScreen: 'dashboard',
-      birthDate
+      birthDate: data.birthDate,
+      isPremature: data.isPremature,
+      gestationWeeks: data.gestationWeeks || null
     }))
   }
 
@@ -49,11 +65,43 @@ export default function HomePage() {
 
   const handleCheckinSubmit = (data: CheckinData) => {
     console.log('Check-in data:', data)
-    // In a real app, you would send this data to your backend
+    // Add to checkin history
     setAppState(prev => ({
       ...prev,
       selectedRating: data.emotionalRating,
-      selectedPainAnswer: data.physicalPain
+      selectedPainAnswer: data.physicalPain,
+      checkinHistory: [...prev.checkinHistory, data],
+      currentScreen: 'checkin-confirmation'
+    }))
+    setCurrentCheckinData(data)
+  }
+
+  const handleSeeActionPlan = () => {
+    setAppState(prev => ({
+      ...prev,
+      currentScreen: 'action-plan'
+    }))
+  }
+
+  const handleStartChat = () => {
+    setAppState(prev => ({
+      ...prev,
+      currentScreen: 'ai-chat'
+    }))
+  }
+
+  const handleBackToDashboard = () => {
+    setAppState(prev => ({
+      ...prev,
+      currentScreen: 'dashboard'
+    }))
+  }
+
+  const handleTabChange = (tab: 'home' | 'learn' | 'support' | 'me') => {
+    setAppState(prev => ({
+      ...prev,
+      activeTab: tab,
+      currentScreen: tab === 'home' ? 'dashboard' : 'dashboard' // For now, all tabs go to dashboard
     }))
   }
 
@@ -61,16 +109,66 @@ export default function HomePage() {
     ? calculateWeekPostpartum(appState.birthDate) 
     : 2 // Default fallback
 
+  // Determine layout props based on current screen
+  const getLayoutProps = () => {
+    const isOnboarding = appState.currentScreen === 'onboarding'
+    const isChat = appState.currentScreen === 'ai-chat'
+    
+    return {
+      showHeader: !isOnboarding,
+      showNavigation: !isOnboarding,
+      activeTab: appState.activeTab,
+      onTabChange: handleTabChange,
+      headerTitle: isChat ? 'Hesta AI Specialist' : undefined,
+      showBackButton: isChat,
+      onBack: isChat ? handleBackToDashboard : undefined
+    }
+  }
+
   return (
-    <main className="relative">
+    <AppLayout {...getLayoutProps()}>
       {appState.currentScreen === 'onboarding' && (
         <Onboarding onSubmit={handleOnboardingSubmit} />
       )}
 
       {appState.currentScreen === 'dashboard' && (
-        <Dashboard 
+        appState.isPremature && appState.gestationWeeks ? (
+          <NICUDashboard 
+            weekPostpartum={weekPostpartum}
+            onStartCheckin={handleStartCheckin}
+            checkinHistory={appState.checkinHistory}
+            activeTab={appState.activeTab}
+            onTabChange={handleTabChange}
+            gestationWeeks={appState.gestationWeeks}
+          />
+        ) : (
+          <Dashboard 
+            weekPostpartum={weekPostpartum}
+            onStartCheckin={handleStartCheckin}
+            checkinHistory={appState.checkinHistory}
+            activeTab={appState.activeTab}
+            onTabChange={handleTabChange}
+          />
+        )
+      )}
+
+      {appState.currentScreen === 'checkin-confirmation' && currentCheckinData && (
+        <CheckinConfirmation 
+          checkinData={currentCheckinData}
+          onSeeActionPlan={handleSeeActionPlan}
+        />
+      )}
+
+      {appState.currentScreen === 'action-plan' && (
+        <ActionPlan 
           weekPostpartum={weekPostpartum}
-          onStartCheckin={handleStartCheckin}
+          onStartChat={handleStartChat}
+        />
+      )}
+
+      {appState.currentScreen === 'ai-chat' && (
+        <AIChat 
+          onBack={handleBackToDashboard}
         />
       )}
 
@@ -78,7 +176,8 @@ export default function HomePage() {
         isOpen={isCheckinModalOpen}
         onClose={handleCloseCheckin}
         onSubmit={handleCheckinSubmit}
+        isNICU={appState.isPremature}
       />
-    </main>
+    </AppLayout>
   )
 }
